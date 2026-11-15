@@ -34,12 +34,17 @@
 
   <div class="box">
     <div class="label">Сумма</div>
-    <div class="value" id="amount">10 USDT</div>
+    <div class="value" id="amount">0.5 USDT</div>
+  </div>
+
+  <div class="box">
+    <div class="label">Сеть</div>
+    <div class="value">BEP20 (BNB Smart Chain)</div>
   </div>
 
   <div class="box">
     <div class="label">Адрес кошелька</div>
-    <div class="value" id="wallet">ВСТАВЬ_СВОЙ_АДРЕС</div>
+    <div class="value" id="wallet">0xd0ff7afda86f17D8A7dF4012b803722A99e00c00</div>
     <button class="copy" id="copyBtn">Скопировать адрес</button>
   </div>
 
@@ -66,7 +71,7 @@
   tg.MainButton.onClick(async () => {
     tg.MainButton.showProgress();
     try {
-      const res = await fetch("https://ТВОЙ_БЭКЕНД/api/check-payment", {
+      const res = await fetch("/.netlify/functions/check-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ initData: tg.initData })
@@ -83,3 +88,4 @@
 </script>
 </body>
 </html>
+
