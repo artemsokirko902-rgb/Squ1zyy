@@ -37,7 +37,7 @@ exports.handler = async (event) => {
   }
 
   const url =
-    "https://api.bscscan.com/api?module=account&action=tokentx" +
+    "https://api.etherscan.io/v2/api?chainid=56&module=account&action=tokentx" +
     `&contractaddress=${USDT_BSC}&address=${WALLET}` +
     `&page=1&offset=50&sort=desc&apikey=${BSCSCAN_KEY}`;
 
@@ -59,3 +59,4 @@ exports.handler = async (event) => {
   for (let i = 0; i < 12; i++) order += crypto.randomInt(0, 10);
   return reply(200, { paid: true, order });
 };
+
