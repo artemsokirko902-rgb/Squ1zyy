@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Заказ</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  body {
+    margin: 0; padding: 20px 16px 96px;
+    font: 16px/1.4 -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #111);
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .hint { color: var(--tg-theme-hint-color, #888); margin: 0 0 20px; }
+  .box {
+    background: var(--tg-theme-secondary-bg-color, #f2f2f2);
+    border-radius: 12px; padding: 14px; margin-bottom: 12px;
+  }
+  .label { font-size: 13px; color: var(--tg-theme-hint-color, #888); }
+  .value { font-size: 17px; word-break: break-all; margin-top: 2px; }
+  button.copy {
+    margin-top: 10px; padding: 8px 14px; border: 0; border-radius: 8px;
+    background: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #fff); font-size: 15px;
+  }
+  #status { margin-top: 16px; min-height: 22px; }
+</style>
+</head>
+<body>
+  <h1 id="title">Заказ</h1>
+  <p class="hint" id="hello"></p>
+
+  <div class="box">
+    <div class="label">Сумма</div>
+    <div class="value" id="amount">10 USDT</div>
+  </div>
+
+  <div class="box">
+    <div class="label">Адрес кошелька</div>
+    <div class="value" id="wallet">ВСТАВЬ_СВОЙ_АДРЕС</div>
+    <button class="copy" id="copyBtn">Скопировать адрес</button>
+  </div>
+
+  <div id="status"></div>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+  document.getElementById("hello").textContent =
+    user ? "Привет, " + user.first_name + "!" : "Открой приложение из Telegram";
+
+  document.getElementById("copyBtn").onclick = async () => {
+    const text = document.getElementById("wallet").textContent;
+    try { await navigator.clipboard.writeText(text); } catch (e) {}
+    tg.HapticFeedback.notificationOccurred("success");
+    setStatus("Адрес скопирован");
+  };
+
+  tg.MainButton.setText("Я оплатил");
+  tg.MainButton.show();
+  tg.MainButton.onClick(async () => {
+    tg.MainButton.showProgress();
+    try {
+      const res = await fetch("https://ТВОЙ_БЭКЕНД/api/check-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData: tg.initData })
+      });
+      const data = await res.json();
+      setStatus(data.paid ? "Оплата найдена. Заказ: " + data.order : "Оплату пока не вижу. Подожди пару минут и нажми ещё раз");
+    } catch (e) {
+      setStatus("Не получилось связаться с сервером");
+    }
+    tg.MainButton.hideProgress();
+  });
+
+  function setStatus(t) { document.getElementById("status").textContent = t; }
+</script>
+</body>
+</html>
