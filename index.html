@@ -6,45 +6,88 @@
 <title>Заказ</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+  :root {
+    --bg: #0a0614;
+    --card: rgba(255, 255, 255, 0.05);
+    --line: rgba(255, 255, 255, 0.09);
+    --text: #f3eefc;
+    --muted: #9a90b4;
+    --accent: #a78bfa;
+    --accent2: #d946ef;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
   body {
-    margin: 0; padding: 20px 16px 96px;
-    font: 16px/1.4 -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #111);
+    padding: 28px 18px 120px;
+    font: 16px/1.45 -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(900px 520px at 90% -10%, rgba(139, 92, 246, 0.45), transparent 60%),
+      radial-gradient(700px 500px at -10% 35%, rgba(217, 70, 239, 0.22), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
   }
-  h1 { font-size: 22px; margin: 0 0 4px; }
-  .hint { color: var(--tg-theme-hint-color, #888); margin: 0 0 20px; }
-  .box {
-    background: var(--tg-theme-secondary-bg-color, #f2f2f2);
-    border-radius: 12px; padding: 14px; margin-bottom: 12px;
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .hint { color: var(--muted); margin: 0 0 26px; }
+
+  .hero {
+    padding: 22px 20px;
+    border-radius: 24px;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.38), rgba(217, 70, 239, 0.20));
+    border: 1px solid rgba(167, 139, 250, 0.28);
+    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.18);
   }
-  .label { font-size: 13px; color: var(--tg-theme-hint-color, #888); }
-  .value { font-size: 17px; word-break: break-all; margin-top: 2px; }
+  .hero .label { color: #cdbff0; font-size: 14px; }
+  .hero .price { font-size: 44px; font-weight: 700; letter-spacing: -0.03em; margin-top: 2px; }
+  .hero .net { color: #cdbff0; font-size: 14px; margin-top: 4px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 14px;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+  .label { font-size: 13px; color: var(--muted); }
+  .wallet {
+    margin-top: 6px;
+    font: 15px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+    word-break: break-all;
+  }
   button.copy {
-    margin-top: 10px; padding: 8px 14px; border: 0; border-radius: 8px;
-    background: var(--tg-theme-button-color, #2481cc);
-    color: var(--tg-theme-button-text-color, #fff); font-size: 15px;
+    margin-top: 14px; width: 100%;
+    padding: 13px 16px; border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text); font-size: 16px; font-weight: 600;
+    transition: transform 0.12s ease, background 0.12s ease;
   }
-  #status { margin-top: 16px; min-height: 22px; }
+  button.copy:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.12); }
+  button.copy.done { background: rgba(167, 139, 250, 0.22); border-color: rgba(167, 139, 250, 0.55); }
+
+  #status {
+    min-height: 22px; margin-top: 6px; padding: 0 4px;
+    color: var(--muted); font-size: 15px;
+  }
+  #status.ok { color: var(--accent); }
 </style>
 </head>
 <body>
   <h1 id="title">Заказ</h1>
   <p class="hint" id="hello"></p>
 
-  <div class="box">
-    <div class="label">Сумма</div>
-    <div class="value" id="amount">0.5 USDT</div>
+  <div class="hero">
+    <div class="label">К оплате</div>
+    <div class="price" id="amount">0.5 USDT</div>
+    <div class="net">Сеть BEP20 (BNB Smart Chain)</div>
   </div>
 
-  <div class="box">
-    <div class="label">Сеть</div>
-    <div class="value">BEP20 (BNB Smart Chain)</div>
-  </div>
-
-  <div class="box">
+  <div class="card">
     <div class="label">Адрес кошелька</div>
-    <div class="value" id="wallet">0xd0ff7afda86f17D8A7dF4012b803722A99e00c00</div>
+    <div class="wallet" id="wallet">0xd0ff7afda86f17D8A7dF4012b803722A99e00c00</div>
     <button class="copy" id="copyBtn">Скопировать адрес</button>
   </div>
 
@@ -54,22 +97,33 @@
   const tg = window.Telegram.WebApp;
   tg.ready();
   tg.expand();
+  try {
+    tg.setHeaderColor("#0a0614");
+    tg.setBackgroundColor("#0a0614");
+  } catch (e) {}
 
   const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
   document.getElementById("hello").textContent =
     user ? "Привет, " + user.first_name + "!" : "Открой приложение из Telegram";
 
-  document.getElementById("copyBtn").onclick = async () => {
+  const copyBtn = document.getElementById("copyBtn");
+  copyBtn.onclick = async () => {
     const text = document.getElementById("wallet").textContent;
     try { await navigator.clipboard.writeText(text); } catch (e) {}
-    tg.HapticFeedback.notificationOccurred("success");
-    setStatus("Адрес скопирован");
+    try { tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+    copyBtn.textContent = "Адрес скопирован";
+    copyBtn.classList.add("done");
+    setTimeout(() => {
+      copyBtn.textContent = "Скопировать адрес";
+      copyBtn.classList.remove("done");
+    }, 2000);
   };
 
-  tg.MainButton.setText("Я оплатил");
+  tg.MainButton.setParams({ text: "Я оплатил", color: "#8b5cf6", text_color: "#ffffff" });
   tg.MainButton.show();
   tg.MainButton.onClick(async () => {
     tg.MainButton.showProgress();
+    setStatus("Проверяю оплату...", false);
     try {
       const res = await fetch("/.netlify/functions/check-payment", {
         method: "POST",
@@ -77,15 +131,22 @@
         body: JSON.stringify({ initData: tg.initData })
       });
       const data = await res.json();
-      setStatus(data.paid ? "Оплата найдена. Заказ: " + data.order : "Оплату пока не вижу. Подожди пару минут и нажми ещё раз");
+      if (data.paid) {
+        setStatus("Оплата найдена. Заказ: " + data.order, true);
+      } else {
+        setStatus("Оплату пока не вижу. Подожди пару минут и нажми ещё раз", false);
+      }
     } catch (e) {
-      setStatus("Не получилось связаться с сервером");
+      setStatus("Не получилось связаться с сервером", false);
     }
     tg.MainButton.hideProgress();
   });
 
-  function setStatus(t) { document.getElementById("status").textContent = t; }
+  function setStatus(t, ok) {
+    const el = document.getElementById("status");
+    el.textContent = t;
+    el.className = ok ? "ok" : "";
+  }
 </script>
 </body>
 </html>
-
